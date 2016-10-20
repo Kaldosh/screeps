@@ -1,0 +1,79 @@
+var roleHarvester = require('role.harvester');
+var roleUpgrader = require('role.upgrader');
+var roleBuilder = require('role.builder');
+var roleDistributor = require('role.distributor');
+var roleRecycle = require('role.recycle');
+var roleMulti = require('role.multi');
+var roleProbe = require('role.probe');
+var rolePlod = require('role.plod');
+var roleSpy = require('role.spy');
+
+
+var spawners = require('spawners');
+var cleanup = require('cleanup');
+var modBuild = require('modBuild');
+var modTowers = require('modTowers');
+var modSpies = require('modSpies');
+
+function runRoles(){
+    for(var name in Game.creeps) {
+        var creep = Game.creeps[name];
+        var myRole=creep.memory.tempRole||creep.memory.role;
+        try {
+            switch(myRole){
+                case "harvester":
+                    roleHarvester.run(creep);
+                    break;
+                case "upgrader":
+                    roleUpgrader.run(creep);
+                    break;
+                case "builder":
+                    roleBuilder.run(creep);
+                    break;
+                case "distributor":
+                    roleDistributor.run(creep);
+                    break;
+                case "recycle":
+                    roleRecycle.run(creep);
+                    break;
+                case "multi":
+                    roleMulti.run(creep);
+                    break;
+                case "probe":
+                    roleProbe.run(creep);
+                    break;
+                case "plod":
+                    rolePlod.run(creep);
+                    break;
+                case "spy":
+                    roleSpy.run(creep);
+                    break;
+                default:
+                    console.log("unknown role:" + myRole)
+            }
+            cleanup.cleanupCreep(creep);
+        } catch (err) {
+            console.log("EXCEPTION PROCESSING CREEP:" + creep.name + " - " + err )
+        }
+    }    
+}
+
+module.exports.loop = function () {
+//return;
+    var runcaught=[
+        ()=>spawners.run(),
+        ()=>runRoles(),
+        ()=>cleanup.cleanupMain(),
+        ()=>modBuild.run(),
+        ()=>modTowers.run(),
+        ()=>modSpies.run(),
+    ];
+    for(var i=0;i<runcaught.length;i++){
+        try{
+        runcaught[i]();
+        } catch(err){
+            console.log("--------EXCEPTION RUNNING CAUGHT:" + runcaught[i] + " threw " +  err)
+        }
+    }
+
+};

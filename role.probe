@@ -1,0 +1,120 @@
+module.exports = {
+    spawn: function(spawnpoint){
+        var mySpawn =Game.spawns[spawnpoint||'Spawn1'];
+        var newName = mySpawn.createCreep([MOVE], "probe"+(Memory.creepcount++), {role: 'probe'});
+        return newName;
+    },
+    spawnWork: function(spawnpoint){
+        var mySpawn =Game.spawns[spawnpoint||'Spawn1'];
+        var newName = mySpawn.createCreep([MOVE,WORK,CARRY], "probe"+(Memory.creepcount++), {role: 'probe'});
+        return newName;
+    },
+    spawnCarry: function(spawnpoint){
+        var mySpawn =Game.spawns[spawnpoint||'Spawn1'];
+        var newName = mySpawn.createCreep([MOVE,MOVE,WORK,CARRY,CARRY,CARRY], "probe"+(Memory.creepcount++), {role: 'probe'});
+        return newName;
+    },
+    spawnClaim: function(spawnpoint){
+        var mySpawn =Game.spawns[spawnpoint||'Spawn1'];
+        var newName = mySpawn.createCreep([MOVE,CLAIM], "probe"+(Memory.creepcount++), {role: 'probe'});
+        return newName;
+    },
+    spawnSoldier: function(spawnpoint){
+        var mySpawn =Game.spawns[spawnpoint||'Spawn1'];
+        var newName = mySpawn.createCreep([MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK], "probe"+(Memory.creepcount++), {role: 'probe'});
+        return newName;
+    },
+    
+    run:function(creep){
+        var probeTarget=Game.flags["probeTarget"];
+        if (probeTarget) {
+            if (probeTarget.color ==COLOR_RED){
+                var killit = Game.getObjectById("57fe30cf1d8f9fd96c8a2dbb");
+                if (creep.pos.isNearTo(killit)){
+                    var result=creep.attack();
+                    if (result !=OK){
+                        console.log("unable to attack:" + result);
+                    }
+                }
+                return;
+            }
+            if (! creep.pos.isNearTo(probeTarget)){
+                var result = creep.moveTo(probeTarget);
+                if (result!=OK && result != ERR_TIRED) console.log("probe move failed:" + result);
+                return;
+            }
+            var sites=probeTarget.pos.lookFor(LOOK_CONSTRUCTION_SITES);
+            if (sites && sites.length>0){
+                var result = creep.build(sites[0]);
+                if (result != OK){
+                    console.log("error probe couldnt build:" + result);
+                }
+                return;
+            };
+            var sources=probeTarget.pos.lookFor(LOOK_SOURCES);
+            if (sources && sources.length>0){
+                var result = creep.harvest(sources[0]);
+                if (result!=OK){
+                    console.log("error probe couldn't harvest");
+                }
+                return;
+            }
+            
+            var minerals=probeTarget.pos.lookFor(LOOK_MINERALS);
+            if (minerals && minerals.length>0){
+                var source=minerals[0];
+                var result = creep.harvest(source);
+                console.log("atempted harvested. result:" + result);
+                if (result==ERR_NOT_IN_RANGE) {
+                    var result = creep.moveTo(source);
+                    if (result != OK && result != ERR_TIRED){
+                        console.log("error probe harvesting minerals:" + result);
+                    }
+                }
+                return;
+            }
+            
+            
+            var structures= probeTarget.pos.lookFor(LOOK_STRUCTURES);
+            if (structures && structures.length>0){
+                for(var i=0;i<structures.length;i++){
+                    var struct = structures[i];
+                    if (struct instanceof StructureContainer){
+                        if ((Game.time %10==0 ||probeTarget.secondaryColor ==COLOR_BROWN )) {
+                            creep.transfer(struct, RESOURCE_KEANIUM);
+                        } else if ((Game.time %10==0 ||probeTarget.color==COLOR_GREY ) && probeTarget.color != COLOR_YELLOW) {
+                            creep.withdraw(struct, RESOURCE_ENERGY);
+                        } else if ((Game.time % 10==5 ||probeTarget.color==COLOR_YELLOW ) && probeTarget.color != COLOR_GREY) {
+                            creep.transfer(struct, RESOURCE_ENERGY);
+                        }
+                    } else if (struct instanceof StructureController){
+                        var result=creep.claimController(struct);
+                        
+                        if (result ==OK) {
+                            console.log("successful claiming:" + result);
+                        } else {
+                            console.log("error claiming:" + result);
+                        }
+                    }
+                }
+                return;
+            }
+        }
+        /*
+        switch(Game.time%10){
+            case 0:creep.say("hello :)");break;
+            case 1:creep.say("friends?");break;
+            case 2:creep.say("you");break;
+            case 3: creep.say("started"); break;
+            case 4: creep.say("this"); break;
+            
+            case 6: creep.say("we"); break;
+            case 7: creep.say("could"); break;
+            case 8: creep.say("co-exist?"); break;
+            
+            
+        }*/
+        
+    }
+
+};

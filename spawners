@@ -1,0 +1,71 @@
+var spawners = {
+    run: function() {
+        
+        var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
+        var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
+        var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
+        var distributors = _.filter(Game.creeps, (creep) => creep.memory.role == 'distributor');
+        var multis = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner' || creep.memory.role == 'multi');
+        var allCreeps = _.filter(Game.creeps, (creep) => true);
+
+        if (Game.time %1==0) console.log("time:"+ Game.time + ";multi:" + multis.length + ";Harv: " + harvesters.length + "; Upg:" + upgraders.length + "; Buil:" + builders.length + "; Dist:" + distributors.length);
+        var mySpawn =Game.spawns['Spawn1'];
+        
+        
+        //for (var i=0;i<Memory.jobStatic.length;i++){
+            
+        //}
+        
+        //TODO: ------------------- hard 2 
+        for(var i=0;i<Memory.slots.length;i++){
+            //TODO: disable the auto-multi for all slots. only the first 2 slots. will fix when switching over from slots to jobs
+            if (i>2) break;
+            var slotMem=Memory.slotMem[i]||{occupant:null};
+            if (!slotMem.occupant || !Game.creeps[slotMem.occupant]) {
+                var slotId=i;
+                var parts=[MOVE,CARRY,WORK];
+                console.log("allCreeps.length:" + allCreeps.length);
+                if (allCreeps.length>=1) parts=[MOVE,CARRY,WORK,WORK];
+                if (mySpawn.room.energyAvailable>=450) parts=[MOVE,MOVE,CARRY,WORK,WORK,WORK];
+                
+                var newCreepName = mySpawn.createCreep(parts, "multi"+(Memory.creepcount++) , {role: 'multi', slotId:slotId});
+                if (_.isString(newCreepName)){
+                    //created
+                    slotMem.occupant=newCreepName;
+                    Memory.slotMem[i]=slotMem;
+                    Memory.pointMem[Memory.slots[slotId].sourceId].miners.push(newCreepName);
+                    return;
+                } else {
+                    //nope - couldn't make it yet
+                    console.log("spawner couldn't make multi");
+                    return;
+                }
+            }
+        }
+
+        if(harvesters.length < 0) {
+            var parts = [WORK,WORK,CARRY,MOVE];//300
+            if (harvesters.length>0 || mySpawn.room.energyAvailable>=350) parts = [WORK,WORK,CARRY,MOVE,MOVE];
+            if (harvesters.length>0 || mySpawn.room.energyAvailable>=550) parts = [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE];
+            var newName = mySpawn.createCreep(parts, "harvester"+(Memory.creepcount++) , {role: 'harvester', sourceId:1});
+            if (newName== ERR_NOT_ENOUGH_ENERGY && harvesters.length==0){
+                newName = mySpawn.createCreep([WORK,CARRY,MOVE], "mini-harvester"+(Memory.creepcount++) , {role: 'harvester', sourceId:1});
+                console.log('Spawning mini harvester: ' + newName);
+            } else {
+                console.log('Spawning new harvester: ' + newName);
+            }
+        } else if(distributors.length < 2) {
+            var newName = mySpawn.createCreep([WORK,CARRY,CARRY,MOVE,MOVE], "distributor"+(Memory.creepcount++), {role: 'distributor', sourceId:1});
+            console.log('Spawning new distributor: ' + newName);
+        } else if(builders.length < 1) {
+            var parts = [WORK,WORK,CARRY,MOVE];//300
+            //if (mySpawn.room.energyCapacityAvailable>=500) parts = [WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE];
+            var newName = mySpawn.createCreep(parts, "builder"+(Memory.creepcount++), {role: 'builder', sourceId:0});
+            console.log('Spawning new builder: ' + newName);
+        } else if(upgraders.length < 2) {
+            var newName = mySpawn.createCreep([WORK,WORK,CARRY,MOVE,MOVE,MOVE], "upgrader"+(Memory.creepcount++), {role: 'upgrader', sourceId:0});
+            console.log('Spawning new upgrader: ' + newName);
+        } 
+    }
+}
+module.exports = spawners;
