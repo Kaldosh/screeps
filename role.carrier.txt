@@ -1,0 +1,61 @@
+module.exports = {
+MODE_PICKUP:0, MODE_DROPOFF:1,
+
+
+newDropoff: function(creep){
+    //reallocate goalId to find the best place to drop what we're carrying, and move one step towards it.
+    //TODO
+    
+    //towers, then choose 50/50 room sinks vs my sinksrandomly among all the room energy sinks and my sinks
+    //nope - let the distributor do it
+    //nope... we re a perfect distributor. we should find nearest and keep dumping
+    //pickup, then dump nearest room place, then most empty of my sinks
+    
+    
+    
+    creep.memory.goalId=findNewDropoff();
+    creep.memory.carryMode=MODE_DROPOFF;
+    
+},
+
+newPickup:function(creep){
+    //reallocate goalId to find the best place to get more stuff, and move one step towards it.
+    //TODO
+    //based on how full it will be by the time we get there
+    
+    creep.memory.goalId=findNewPickup();
+    creep.memory.carryMode=MODE_PICKUP;
+},
+
+
+run:function(creep){
+    if (creep.carry.energy==0) 
+        creep.memory.carryMode=this.MODE_PICKUP;
+    else if (creep.carry.energy==creep.carryCapacity){
+        creep.memory.carryMode=this.MODE_DROPOFF;
+    }
+
+    var goal=Game.getObjectById(creep.memory.goalId);
+    if (creep.pos.inRangeTo(goal,1)) {
+        if (goal instanceof StructureContainer){
+            if (creep.memory.carryMode==MODE_PICKUP) {
+                var result = creep.withdraw(goal, RESOURCE_ENERGY);
+                if (result != OK) {console.log("error carrrier withdring"); return;}
+                newDropoff(creep);
+            } else {
+                var result = creep.transfer(goal, RESOURCE_ENERGY);
+                if (result != OK) console.log("error droppoff carrier:" + result);
+                newPickup(creep);
+            }
+        } else if (goal istanceof StructureExtension || goal instanceof StructureSpawn) {
+            var result=creep.transfer(goal, RESOURCE_ENERGY);
+            if (result == OK) return; else console.log("error dumping carrier:" + result);
+        } else {
+            console.log("carrier - goal of unknown structure type:" + goalId);
+        }
+    } else {
+        creep.moveTo(goal);
+    }
+}
+
+};

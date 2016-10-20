@@ -1,0 +1,95 @@
+module.exports = {
+    //require("setup").roomSetup();
+    roomSetup:function(){
+        var myRoom = Game.rooms.E67S56;
+        if (! Memory.slotMem)  {
+            console.log("set slotMem - initial game structures created");
+            Memory.slotMem=[];
+        }
+
+        Memory.slots=[
+            {
+                pos:new RoomPosition(7,35,myRoom.name),
+                sourceId:"57ef9ee286f108ae6e610135",
+            },{
+                pos:new RoomPosition(7,36,myRoom.name),
+                sourceId:"57ef9ee286f108ae6e610135",
+            },
+            {
+                pos:new RoomPosition(38,12,myRoom.name),
+                sourceId:"57ef9ee286f108ae6e610133",
+            }
+            ,{
+                pos:new RoomPosition(38,13,myRoom.name),
+                sourceId:"57ef9ee286f108ae6e610133",
+            },
+            {
+                pos:new RoomPosition(7,37,myRoom.name),
+                sourceId:"57ef9ee286f108ae6e610135",
+            }
+        ];
+        
+        Memory.points={
+            "57ef9ee286f108ae6e610135":{
+                sourceId:"57ef9ee286f108ae6e610135",
+                containerPos:{x:6,y:36, roomName:myRoom.name}
+                //distributors:[],
+               // miners:[]
+            },
+            "57ef9ee286f108ae6e610133":{
+                sourceId:"57ef9ee286f108ae6e610133",
+                containerPos:{x:37,y:13, roomName:myRoom.name}
+                //distributors:[],
+                //miners:[]
+            }
+        };
+        if (! Memory.pointMem) Memory.pointMem=[];
+        for (sourceId in Memory.points) {
+            var point = Memory.points[sourceId];
+            if ( ! Memory.pointMem[sourceId]){
+                Memory.pointMem[sourceId]={miners:[],distributors:[]};
+            }
+        }
+
+/*
+
+return {
+            mode:0,
+            pos:spawn.pos,
+            goalId:spawn.id,
+            contId:spawn.id
+        };
+        
+        
+        this.spawn("Spawn1", new RoomPosition(7,36,"E67S56"),"57ef9ee286f108ae6e610135","57fbfdc594666ca966b639d8");
+        this.spawn("Spawn1", new RoomPosition(38,12,"E67S56"),"57ef9ee286f108ae6e610133","57fc837393f48b4670752c28");
+        this.spawn("Spawn1", new RoomPosition(33,20,"E67S56"),"57ef9ee286f108ae6e610134","57fc837393f48b4670752c28");
+        */
+
+        if (!Memory.jobDyn) Memory.jobDyn=[];
+        
+        Memory.jobStatic=[
+            {role:"multi", roleMem:{slotId:0}},
+            
+            {role:"carrier", roleMem:{
+                sources:[new RoomPosition(37,13,"E67S56"), new RoomPosition(6,36,"E67S56")], 
+                sinkMode:"Sequence",
+                sinks:[new RoomPosition(34,19,"E67S56"), new RoomPosition(34,31,"E66S56")]}},
+
+            {role:"plod",roleMem:{mode:0,pos:new RoomPosition(7,37,"E67S56"),goalId:"57ef9ee286f108ae6e610135", contPos:new RoomPosition(6,36,"E67S56")}},
+            
+
+            {role:"carrier", roleMem:{
+                sources:["57fbfdc594666ca966b639d8","57fc837393f48b4670752c28",null], 
+                sinkMode:"Sequence"
+                sinks:[]}},
+            
+            {role:"plod",roleMem:{mode:0,pos:new RoomPosition(7,37,"E67S56"),goalId:"57ef9ee286f108ae6e610135", contPos:new RoomPosition(6,36,"E67S56")}},
+            
+            
+            
+        }];
+        
+        
+    }
+};
